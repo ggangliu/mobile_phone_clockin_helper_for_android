@@ -36,11 +36,11 @@ class AutoClockInOut:
                     break
 
     def wakeup_input_passward(self):
-        self.run_log("唤醒手机.")
+        self.run_log("Wake up mobile phone..")
         phone.wakeup()
-        self.run_log("滑动解锁屏幕.")
+        self.run_log("Unlock screen....")
         phone.swipe(535, 1847, 535, 1415)
-        self.run_log("输入密码")
+        self.run_log("Input password...")
         phone.click(219, 924)  # 1
         phone.click(539, 1340)  # 8
         phone.click(855, 934)  # 3
@@ -51,16 +51,16 @@ class AutoClockInOut:
         if (current_time >= clock_time[0] and current_time <= clock_time[1]):
             self.wakeup_input_passward()
             # de(text="考勤打卡").click()
-            self.run_log("等待3秒后，打卡...")
+            self.run_log("After waiting 3 seconds, clock in...")
             time.sleep(3)
             phone.click(533, 1262)  # 上下班打卡
-            self.run_log("打卡时间：" + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())))
+            self.run_log("The time of clock in: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time())))
             time.sleep(5)
             phone.click(533, 1382)  # 我知道了
             # de.click(82,147) #返回菜单
             return 1
         else:
-            self.run_log("打卡时间未到... %s" % current_time)
+            self.run_log("The time of clock-in don't come in... %s" % current_time)
             return 0
 
 if __name__ == '__main__':
