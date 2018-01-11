@@ -48,7 +48,7 @@ class AutoClockInOut:
 
     def auto_clock(self, clock_time):
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-        if (current_time >= clock_time[0] and current_time <= clock_time[1]):
+        if clock_time[1] >= current_time >= clock_time[0]:
             self.wakeup_input_passward()
             # de(text="考勤打卡").click()
             self.run_log("After waiting 3 seconds, clock in...")
@@ -58,6 +58,8 @@ class AutoClockInOut:
             time.sleep(5)
             phone.click(533, 1382)  # 我知道了
             # de.click(82,147) #返回菜单
+            return 1
+        elif current_time > clock_time[1]:    
             return 1
         else:
             self.run_log("The time of clock-in don't come in... %s" % current_time)
