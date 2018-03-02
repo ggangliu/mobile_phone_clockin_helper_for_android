@@ -32,10 +32,10 @@ def dump_device_info():
     """
     显示设备信息
     """
-    size_str = os.popen('adb shell wm size').read()
-    device_str = os.popen('adb shell getprop ro.product.device').read()
-    Phone_os_str = os.popen('adb shell getprop ro.build.version.release').read()
-    density_str = os.popen('adb shell wm density').read()
+    size_str = os.popen('.\\Tools\\platform-tools\\adb shell wm size').read()
+    device_str = os.popen('.\\Tools\\platform-tools\\adb shell getprop ro.product.device').read()
+    Phone_os_str = os.popen('.\\Tools\\platform-tools\\adb shell getprop ro.build.version.release').read()
+    density_str = os.popen('.\\Tools\\platform-tools\\adb shell wm density').read()
     print("""******************************\nScreen: {size}\nDensity: {dpi}\nDevice: {device}\nPhone OS: {Phone_os}\nHost OS: {host_os}
 Python: {python}\n******************************""".format(
               size=size_str.strip(),
@@ -57,7 +57,7 @@ def pull_screenshot(file_name):
     global SCREENSHOT_WAY
     if 1 <= SCREENSHOT_WAY <= 3:
         process = subprocess.Popen(
-            'adb shell screencap -p',
+            '.\\Tools\\platform-tools\\adb shell screencap -p',
             shell=True, stdout=subprocess.PIPE)
         binary_screenshot = process.stdout.read()
         if SCREENSHOT_WAY == 2:
@@ -68,8 +68,8 @@ def pull_screenshot(file_name):
         f.write(binary_screenshot)
         f.close()
     elif SCREENSHOT_WAY == 0:
-        os.system('adb shell screencap -p /sdcard/screenshot.png')
-        os.system('adb pull /sdcard/screenshot.png .')
+        os.system('.\\Tools\\platform-tools\\adb shell screencap -p /sdcard/screenshot.png')
+        os.system('.\\Tools\\platform-tools\\adb pull /sdcard/screenshot.png .')
 
 
 def check_screenshot():
@@ -132,32 +132,45 @@ class AutoClockInOut:
         Phone.wakeup()
         time.sleep(1)
         self.run_log("解锁屏幕/Unlock screen....")
-        Phone.swipe(535, 1847, 535, 1415)
+        Phone.swipe(198, 1375, 948, 712)
         time.sleep(1)
-        self.run_log("输入密码/Input password...")
-        Phone.click(219, 924)  # 1
-        time.sleep(1)
-        Phone.click(539, 1340)  # 8
-        time.sleep(1)
-        Phone.click(855, 934)  # 3
-        time.sleep(1)
-        Phone.click(857, 1329)  # 9
+        # self.run_log("输入密码/Input password...")
+        # Phone.click(219, 924)  # 1
+        # time.sleep(1)
+        # Phone.click(539, 1340)  # 8
+        # time.sleep(1)
+        # Phone.click(855, 934)  # 3
+        # time.sleep(1)
+        # Phone.click(857, 1329)  # 9
 
     def get_screenshot(self, file_name):
-        os.system('adb shell screencap -p /storage/emulated/0/{}'.format(file_name))
-        os.system('adb pull /storage/emulated/0/{} .'.format(file_name))
+        os.system('.\\Tools\\platform-tools\\adb shell screencap -p /storage/emulated/0/{}'.format(file_name))
+        os.system('.\\Tools\\platform-tools\\adb pull /storage/emulated/0/{} .'.format(file_name))
 
     def auto_clock(self, clock_time):
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
         if clock_time[1] >= current_time >= clock_time[0] or current_time > clock_time[1]:
             self.wakeup_input_passward()
-            Phone(text="考勤打卡").click()
-            self.run_log("等待3秒后，打卡/After waiting 3 seconds, clock in...")
-            time.sleep(5)
+            parse_succuss = False
+            while not parse_succuss:
+                Phone.press.home()
+                time.sleep(1)
+                Phone(text="享用").click()
+                time.sleep(1)
+                Phone(text="取消").click()
+                Phone(text="取消").click()
+                time.sleep(1)
+                Phone(text="考勤打卡").click()
+                self.run_log("等待10秒后，打卡/After waiting 10 seconds, clock in...")
+                time.sleep(10)
 
-            pull_screenshot('screenshot.png')
-            im = Image.open('./{}'.format('screenshot.png'))
-            position = self.find_clockin_pos_from_image(im)
+                try:
+                    pull_screenshot('screenshot.png')
+                    im = Image.open('./{}'.format('screenshot.png'))
+                    position = self.find_clockin_pos_from_image(im)
+                    parse_succuss = True
+                except IndexError:
+                    Phone.press.back()
 
             # Phone.click(533, 1262)  # 上下班打卡
             Phone.click(position[0], position[1])
@@ -168,6 +181,7 @@ class AutoClockInOut:
             time.sleep(3)
             Phone.press.back()
             time.sleep(1)
+            Phone.press.back()
             Phone.sleep()
             return 1
         else:
@@ -206,22 +220,15 @@ class AutoClockInOut:
 
 
 def main():
-    size_str = os.popen('adb shell wm size').read()
-    if not size_str:
-        print('请安装ADB及驱动并配置环境变量'.decode('utf-8'))
-        sys.exit()
-    '''
-    op = yes_or_no('请确保手机打开了USB开发者模式，并连接了电脑，'
-                   '然后打开本程序，确定开始？')
-    if not op:
-        print('bye')
-        return
-    '''
-    print('程序版本号：{}'.format(VERSION).decode('utf-8'))
+    android_home = os.path.abspath(".") + "\\Tools"
+    os.environ["ANDROID_HOME"] = android_home
+    sys.path.append(android_home + "\\platform-tools")
+    print('Version Number: {}'.format(VERSION))
     dump_device_info()
     check_screenshot()
     auto_object = AutoClockInOut()
     print('所有任务已执行结束'.decode('utf-8'))
+    sys.exit()
 
 
 if __name__ == '__main__':
